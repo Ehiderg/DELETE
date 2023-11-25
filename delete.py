@@ -25,19 +25,25 @@ def borrar(numero_documento):
     consulta_response = cursor.execute("SELECT * FROM Registro WHERE NumeroDocumento=?", numero_documento)
     row = consulta_response.fetchone()
     if row:
-        
-        if os.path.exists(row.Foto):
+        foto_path = os.path.join(row.Foto)
+
+        if os.path.exists(foto_path):
+            
             os.remove(row.Foto)
 
         # Agregar operación al log
-        agregar_log(numero_documento, row.TipoDocumento, 'Borrado', f"Se eliminó la información de {row.PrimerNombre} {row.Apellidos} con número de documento {numero_documento}")
+            agregar_log(numero_documento, row.TipoDocumento, 'Borrado', f"Se eliminó la información de {row.PrimerNombre} {row.Apellidos} con número de documento {numero_documento}")
 
         # Persona encontrada, proceder con el borrado
-        cursor.execute("DELETE FROM Registro WHERE NumeroDocumento=?", numero_documento)
-        conn.commit()
+            cursor.execute("DELETE FROM Registro WHERE NumeroDocumento=?", numero_documento)
+            conn.commit()
+            return jsonify({"mensaje": "Borrado exitoso"}), 200
         
+        else:
+            
+            return jsonify({"error": "Foto no encontrada"}), 404
 
-        return jsonify({"mensaje": "Borrado exitoso"}), 200
+       
     else:
         # Persona no encontrada, devolver un mensaje de error
         return jsonify({"error": "Persona no encontrada"}), 404
